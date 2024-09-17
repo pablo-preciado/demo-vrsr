@@ -77,7 +77,7 @@ controlPlane:
         iops: 2000
 compute:
 - name: worker
-  replicas: 0
+  replicas: 2
   platform:
     aws:
       type: m5.xlarge
@@ -261,7 +261,7 @@ controlPlane:
         iops: 2000
 compute:
 - name: worker
-  replicas: 0
+  replicas: 2
   platform:
     aws:
       type: m5.xlarge
