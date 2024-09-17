@@ -1,15 +1,6 @@
 #!/bin/bash
 
-# Set variables
-AWS_ACCESS_KEY=
-AWS_SECRET_ACCESS_KEY=
-BASE_DOMAIN=
-REGION="eu-west-2"
-IMAGE_SET="img4.16.11-multi-appsub"
-SSH_PRIVATE_KEY=
-SSH_PUBLIC_KEY=
-PULL_SECRET=
-
+source vars
 
 printf "\n\n=======================================================\n\n"
 printf "\n\n==========================OOO==========================\n\n"
@@ -60,7 +51,7 @@ metadata:
   name: 'cluster1'
 platform:
   aws:
-    region: $REGION
+    region: $REGION1
     credentialsSecretRef:
       name: cluster1-aws-creds
     type: m5.xlarge
@@ -77,7 +68,7 @@ controlPlane:
         iops: 2000
 compute:
 - name: worker
-  replicas: 2
+  replicas: 0
   platform:
     aws:
       type: m5.xlarge
@@ -110,7 +101,7 @@ metadata:
   namespace: 'cluster1'
   labels:
     cloud: 'AWS'
-    region: $REGION
+    region: $REGION1
     vendor: OpenShift
     cluster.open-cluster-management.io/clusterset: 'default'
 spec:
@@ -124,7 +115,7 @@ spec:
     aws:
       credentialsSecretRef:
         name: cluster1-aws-creds
-      region: $REGION
+      region: $REGION1
   provisioning:
     installConfigSecretRef:
       name: cluster1-install-config
@@ -144,7 +135,7 @@ kind: ManagedCluster
 metadata:
   labels:
     cloud: Amazon
-    region: '$REGION'
+    region: '$REGION1'
     name: 'cluster1'
     vendor: OpenShift
     cluster.open-cluster-management.io/clusterset: 'default'
@@ -172,7 +163,7 @@ spec:
         size: 100
         type: io1
       type: m5.xlarge
-  replicas: 2
+  replicas: 0
 EOF
 printf "\n\n Crear secret pull secret\n\n"
 cat <<EOF | oc apply -f -
@@ -244,7 +235,7 @@ metadata:
   name: 'cluster2'
 platform:
   aws:
-    region: eu-west-3
+    region: $REGION2
     credentialsSecretRef:
       name: cluster2-aws-creds
     type: m5.xlarge
@@ -261,7 +252,7 @@ controlPlane:
         iops: 2000
 compute:
 - name: worker
-  replicas: 2
+  replicas: 0
   platform:
     aws:
       type: m5.xlarge
@@ -294,7 +285,7 @@ metadata:
   namespace: 'cluster2'
   labels:
     cloud: 'AWS'
-    region: eu-west-3
+    region: $REGION2
     vendor: OpenShift
     cluster.open-cluster-management.io/clusterset: 'default'
 spec:
@@ -308,7 +299,7 @@ spec:
     aws:
       credentialsSecretRef:
         name: cluster2-aws-creds
-      region: eu-west-3
+      region: $REGION2
   provisioning:
     installConfigSecretRef:
       name: cluster2-install-config
@@ -328,7 +319,7 @@ kind: ManagedCluster
 metadata:
   labels:
     cloud: Amazon
-    region: 'eu-west-3'
+    region: '$REGION2'
     name: 'cluster2'
     vendor: OpenShift
     cluster.open-cluster-management.io/clusterset: 'default'
@@ -356,7 +347,7 @@ spec:
         size: 100
         type: io1
       type: m5.xlarge
-  replicas: 2
+  replicas: 0
 EOF
 printf "\n\n Crear secret pull secret\n\n"
 cat <<EOF | oc apply -f -
@@ -487,7 +478,7 @@ printf "\n\n EMPIEZA: Configura el Grafana (creando un bucket S3 en AWS)\n\n"
 MY_BUCKET_NAME="grafana-demo-vrsr-${BASE_DOMAIN%%.*}"
 aws configure set aws_access_key_id $AWS_ACCESS_KEY
 aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-aws configure set region $REGION
+aws configure set region eu-west-1
 aws s3 mb s3://$MY_BUCKET_NAME
 oc create namespace open-cluster-management-observability
 oc project open-cluster-management-observability
@@ -554,7 +545,7 @@ printf "\n\n=======================================================\n\n"
 
 printf "\n\n EMPIEZA: Configurar Argo\n\n"
 
-oc new-project openshift-gitops
+oc project openshift-gitops
 cat << EOF | oc apply -f -
 ---
 apiVersion: apps.open-cluster-management.io/v1beta1
