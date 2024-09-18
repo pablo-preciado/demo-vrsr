@@ -6,7 +6,7 @@ You can get the ssh keys from this website: https://www.wpoven.com/tools/create-
 
 Get your pull secret from this site: https://cloud.redhat.com/openshift/install/pull-secret
 
-Fill the ```vars``` file with your variable values.
+Copy the file ```vars``` to a new file called ```my-vars```, fill this new file with your variable values. Note that the file ```my-vars``` will be excluded from git so your secrets won't be exposed.
 
 Now execute the setup-script.sh:
 
