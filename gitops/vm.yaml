@@ -2,6 +2,7 @@ apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   name: demo-vm
+  namespace: default
 spec:
   running: false
   dataVolumeTemplates:
