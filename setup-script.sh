@@ -568,13 +568,6 @@ kind: Namespace
 metadata:
   labels:
     openshift.io/cluster-monitoring: "true"
-  name: ansible-automation-platform
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    openshift.io/cluster-monitoring: "true"
   name: openshift-gitops-operator
 ---
 apiVersion: operators.coreos.com/v1
@@ -595,22 +588,27 @@ spec:
   source: redhat-operators
   sourceNamespace: openshift-marketplace
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    openshift.io/cluster-monitoring: "true"
+  name: aap
+---
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
-  name: ansible-automation-platform-operator
-  namespace: ansible-automation-platform
-spec:
-  targetNamespaces:
-    - ansible-automation-platform
+  name: aap
+  namespace: aap
+spec: {}
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: ansible-automation-platform
-  namespace: ansible-automation-platform
+  name: ansible-automation-platform-operator
+  namespace: aap
 spec:
-  channel: 'stable-2.4'
+  channel: stable-2.4-cluster-scoped
   installPlanApproval: Automatic
   name: ansible-automation-platform-operator
   source: redhat-operators
@@ -630,6 +628,14 @@ printf "\n Fin de la espera \n"
 printf "\n EMPIEZA: Desplegar Ansible Controller\n"
 
 cat << EOF | oc apply -f -
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    openshift.io/cluster-monitoring: "true"
+  name: ansible-automation-platform
+---
 apiVersion: automationcontroller.ansible.com/v1beta1
 kind: AutomationController
 metadata:
@@ -683,3 +689,62 @@ spec:
 EOF
 
 printf "\n FIN: Configurar Argo\n"
+
+printf "\n=======================================================\n"
+printf "\n==========================OOO==========================\n"
+printf "\n=======================================================\n"
+
+printf "\n EMPIEZA: Configurar instalación de kubevirt en los clusteres gestionados\n"
+
+cat << EOF | oc apply -f -
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+  name: openshift-cnv
+---
+apiVersion: app.k8s.io/v1beta1
+kind: Application
+metadata:
+  name: kubevirt
+  namespace: openshift-cnv
+spec:
+  componentKinds:
+    - group: apps.open-cluster-management.io
+      kind: Subscription
+  descriptor: {}
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - kubevirt
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: Subscription
+metadata:
+  name: kubevirt-subscription-1
+  namespace: openshift-cnv
+  annotations:
+    apps.open-cluster-management.io/cluster-admin: 'true'
+    apps.open-cluster-management.io/git-branch: main
+    apps.open-cluster-management.io/git-current-commit: 8742fecccf4d70f90039bc18930bc3c1b36e3041
+    apps.open-cluster-management.io/git-path: gitops/kubevirt
+    apps.open-cluster-management.io/reconcile-option: merge
+    open-cluster-management.io/user-group: c3lzdGVtOmF1dGhlbnRpY2F0ZWQ6b2F1dGgsc3lzdGVtOmF1dGhlbnRpY2F0ZWQ=
+  labels:
+    app: kubevirt
+    app.kubernetes.io/part-of: kubevirt
+    apps.open-cluster-management.io/reconcile-rate: medium
+spec:
+  channel: ggithubcom-pablo-preciado-demo-vrsr-ns/ggithubcom-pablo-preciado-demo-vrsr
+  placement:
+    placementRef:
+      name: kubevirt-placement-1
+      kind: Placement
+posthooks: {}
+prehooks: {}
+EOF
+
+printf "\n FIN: Configurar instalación de kubevirt en los clusteres gestionados\n"

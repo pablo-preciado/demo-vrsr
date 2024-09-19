@@ -8,6 +8,8 @@ Get your pull secret from this site: https://cloud.redhat.com/openshift/install/
 
 Copy the file ```vars``` to a new file called ```my-vars```, fill this new file with your variable values. Note that the file ```my-vars``` will be excluded from git so your secrets won't be exposed.
 
+Log into your openshift cluster before running the script.
+
 Now execute the setup-script.sh:
 
 ```
