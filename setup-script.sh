@@ -505,7 +505,7 @@ oc new-project policies
 oc project policies
 oc adm policy add-cluster-role-to-user open-cluster-management:subscription-admin $(oc whoami)
 oc create -f https://raw.githubusercontent.com/kfrankli/gitops-rhacm-policies/refs/heads/main/acm-native-gitops/gitops-policies-channel-and-subscription.yaml
-
+oc delete policy console-banner -n policies
 printf "\n FIN: Desplegar políticas\n"
 
 printf "\n=======================================================\n"
@@ -689,62 +689,3 @@ spec:
 EOF
 
 printf "\n FIN: Configurar Argo\n"
-
-printf "\n=======================================================\n"
-printf "\n==========================OOO==========================\n"
-printf "\n=======================================================\n"
-
-printf "\n EMPIEZA: Configurar instalación de kubevirt en los clusteres gestionados\n"
-
-cat << EOF | oc apply -f -
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-  name: openshift-cnv
----
-apiVersion: app.k8s.io/v1beta1
-kind: Application
-metadata:
-  name: kubevirt
-  namespace: openshift-cnv
-spec:
-  componentKinds:
-    - group: apps.open-cluster-management.io
-      kind: Subscription
-  descriptor: {}
-  selector:
-    matchExpressions:
-      - key: app
-        operator: In
-        values:
-          - kubevirt
----
-apiVersion: apps.open-cluster-management.io/v1
-kind: Subscription
-metadata:
-  name: kubevirt-subscription-1
-  namespace: openshift-cnv
-  annotations:
-    apps.open-cluster-management.io/cluster-admin: 'true'
-    apps.open-cluster-management.io/git-branch: main
-    apps.open-cluster-management.io/git-current-commit: 8742fecccf4d70f90039bc18930bc3c1b36e3041
-    apps.open-cluster-management.io/git-path: gitops/kubevirt
-    apps.open-cluster-management.io/reconcile-option: merge
-    open-cluster-management.io/user-group: c3lzdGVtOmF1dGhlbnRpY2F0ZWQ6b2F1dGgsc3lzdGVtOmF1dGhlbnRpY2F0ZWQ=
-  labels:
-    app: kubevirt
-    app.kubernetes.io/part-of: kubevirt
-    apps.open-cluster-management.io/reconcile-rate: medium
-spec:
-  channel: ggithubcom-pablo-preciado-demo-vrsr-ns/ggithubcom-pablo-preciado-demo-vrsr
-  placement:
-    placementRef:
-      name: kubevirt-placement-1
-      kind: Placement
-posthooks: {}
-prehooks: {}
-EOF
-
-printf "\n FIN: Configurar instalación de kubevirt en los clusteres gestionados\n"
